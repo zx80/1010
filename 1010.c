@@ -1,5 +1,5 @@
 /*
- * $Id: 1010.c 144 2016-08-19 07:14:26Z coelho $
+ * $Id: 1010.c 153 2016-08-23 09:26:11Z coelho $
  *
  * COPYRIGHT
  *   (c) 2016 Fabien Coelho <1010 dot bang at coelho dot net>
@@ -48,7 +48,7 @@
 #undef PARALLEL_DEGREE
 #endif // PARALLEL
 
-#define VERSION_ID "$Id: 1010.c 144 2016-08-19 07:14:26Z coelho $"
+#define VERSION_ID "$Id: 1010.c 153 2016-08-23 09:26:11Z coelho $"
 
 typedef enum { false, true } bool;
 
@@ -698,15 +698,13 @@ static void auto_play(FILE * out, FILE * err, t7_t init)
 
     fprintf(err,
             "per round: cels=%.2f+-%.2f inputs=%.2f score=%.2f "
-            "max=%d zeros=%d evals=%.0f %.3fs",
+            "max=%d zeros=%d evals=%.0f %.3fs\n",
             A + (1.0 * cel_sum / rounds),
             sqrt((cel_sum2 - (cel_sum * cel_sum) / rounds) / rounds),
             1.0 * inputs_sum / rounds,
             1.0 * f1010.score / rounds,
             maxcels, nzeros, 1.0 * eval_count / rounds,
             (dtime() - start) / rounds);
-
-    fputc('\n', err);
   }
 
   // final report
