@@ -357,7 +357,7 @@ typedef struct {
   t7_t field;        // initial then final field
 } move_t;
 
-#ifdef PARAELLEL
+#ifdef PARALLEL
 static int partial = PARALLEL_DEGREE;
 #else
 #define partial 1
