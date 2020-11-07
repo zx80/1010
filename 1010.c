@@ -1,5 +1,5 @@
 /*
- * $Id: 1010.c 153 2016-08-23 09:26:11Z coelho $
+ * $Id: 1010.c 155 2020-11-07 07:14:18Z coelho $
  *
  * COPYRIGHT
  *   (c) 2016 Fabien Coelho <1010 dot bang at coelho dot net>
@@ -48,7 +48,7 @@
 #undef PARALLEL_DEGREE
 #endif // PARALLEL
 
-#define VERSION_ID "$Id: 1010.c 153 2016-08-23 09:26:11Z coelho $"
+#define VERSION_ID "$Id: 1010.c 155 2020-11-07 07:14:18Z coelho $"
 
 typedef enum { false, true } bool;
 
@@ -357,7 +357,7 @@ typedef struct {
   t7_t field;        // initial then final field
 } move_t;
 
-#ifdef PARAELLEL
+#ifdef PARALLEL
 static int partial = PARALLEL_DEGREE;
 #else
 #define partial 1
@@ -370,7 +370,7 @@ static uint64_t eval_count = 0;
 #define epsilon (1.0E-308)
 
 /* try to place recursively 3 pieces at every possible places
- * worst case complexity: (n²)³ n² = n^8
+ * worst case complexity: (n²)³ n² = n⁸
  */
 static move_t rec_play(t7_t f, int i, move_t move, move_t best,
                        int every, uint32_t * nevals)
