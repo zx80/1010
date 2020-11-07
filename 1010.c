@@ -1,5 +1,5 @@
 /*
- * $Id: 1010.c 157 2020-11-07 07:55:01Z coelho $
+ * $Id: 1010.c 158 2020-11-07 08:07:22Z coelho $
  *
  * COPYRIGHT
  *   (c) 2016 Fabien Coelho <1010 dot bang at coelho dot net>
@@ -48,7 +48,7 @@
 #undef PARALLEL_DEGREE
 #endif // PARALLEL
 
-#define VERSION_ID "$Id: 1010.c 157 2020-11-07 07:55:01Z coelho $"
+#define VERSION_ID "$Id: 1010.c 158 2020-11-07 08:07:22Z coelho $"
 
 typedef enum { false, true } bool;
 
@@ -289,8 +289,13 @@ static bool can_put(t7_t f, const pattern_t * p)
 {
   for (int r = 0; r <= 10 - p->y; r++)
     for (int c = 0; c <= 10 - p->x; c++)
-      if (t7_free(p->pat, f))
+    {
+      int m = 10 * r + c;
+      t7_t pm = p->pat;
+      t7_rshifteq(pm, m);
+      if (t7_free(pm, f))
         return true;
+    }
   return false;
 }
 
