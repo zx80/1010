@@ -1,5 +1,5 @@
 /*
- * $Id: 1010.c 155 2020-11-07 07:14:18Z coelho $
+ * $Id: 1010.c 156 2020-11-07 07:52:47Z coelho $
  *
  * COPYRIGHT
  *   (c) 2016 Fabien Coelho <1010 dot bang at coelho dot net>
@@ -48,7 +48,7 @@
 #undef PARALLEL_DEGREE
 #endif // PARALLEL
 
-#define VERSION_ID "$Id: 1010.c 155 2020-11-07 07:14:18Z coelho $"
+#define VERSION_ID "$Id: 1010.c 156 2020-11-07 07:52:47Z coelho $"
 
 typedef enum { false, true } bool;
 
@@ -102,6 +102,8 @@ static long int my_random(void)
 
 /************************************************************************ T7 */
 
+// bit field representation of the 10x10 board
+
 // gcc seems to have 128-bit integers (unsigned __int128),
 // but the doc is scarce, eg how to write constants for instance.
 
@@ -111,6 +113,7 @@ typedef struct {
   uint32_t points;   // awarded points on last round
 } t7_t;
 
+// operators used to move pieces around and apply changes on T1 structs
 #define t7_rshifteq(i, s)                                           \
   i.f2 = s == 0 ? i.f2 :                                            \
     s < 64 ? i.f2 >> (s) | (i.f1 << (64-(s))) : i.f1 >> ((s) - 64), \
@@ -122,13 +125,14 @@ typedef struct {
 #define t7_free(i, j) ((i.f1 & j.f1) == 0 && (i.f2 & j.f2) == 0)
 #define t7_in(m, i) ((i.f1 & m.f1) == m.f1 && (i.f2 & m.f2) == m.f2)
 
+// board initialization
 #define T7(f1, f2) (t7_t) { f1, f2, 0, 0 }
 
-#define t7_ZER T7(0x0000000000000000L, 0x0000000000000000L)
-#define t7_DOT T7(0x8000000000000000L, 0x0000000000000000L)
-#define t7_TOP T7(0xffc0000000000000L, 0x0000000000000000L)
-#define t7_CBT T7(0x003fffffffffffffL, 0xfffffffff0000000L) // center-bottom
-#define t7_RO1 T7(0x003ff00000000000L, 0x0000000000000000L)
+// constant to define board zones
+#define t7_ZER T7(0x0000000000000000L, 0x0000000000000000L) // empty
+#define t7_DOT T7(0x8000000000000000L, 0x0000000000000000L) // one dot on 0,0
+#define t7_TOP T7(0xffc0000000000000L, 0x0000000000000000L) // top row
+#define t7_RO1 T7(0x003ff00000000000L, 0x0000000000000000L) // rows…
 #define t7_RO2 T7(0x00000ffc00000000L, 0x0000000000000000L)
 #define t7_RO3 T7(0x00000003ff000000L, 0x0000000000000000L)
 #define t7_RO4 T7(0x0000000000ffc000L, 0x0000000000000000L)
@@ -137,9 +141,8 @@ typedef struct {
 #define t7_RO7 T7(0x0000000000000000L, 0x03ff000000000000L)
 #define t7_RO8 T7(0x0000000000000000L, 0x0000ffc000000000L)
 #define t7_BOT T7(0x0000000000000000L, 0x0000003ff0000000L)
-#define t7_LEF T7(0x8020080200802008L, 0x0200802000000000L)
-#define t7_CRI T7(0x7fdff7fdff7fdff7L, 0xfdff7fdff0000000L) // center-right
-#define t7_CO1 T7(0x4010040100401004L, 0x0100401000000000L)
+#define t7_LEF T7(0x8020080200802008L, 0x0200802000000000L) // bottom row
+#define t7_CO1 T7(0x4010040100401004L, 0x0100401000000000L) // columns…
 #define t7_CO2 T7(0x2008020080200802L, 0x0080200800000000L)
 #define t7_CO3 T7(0x1004010040100401L, 0x0040100400000000L)
 #define t7_CO4 T7(0x0802008020080200L, 0x8020080200000000L)
@@ -147,11 +150,13 @@ typedef struct {
 #define t7_CO6 T7(0x0200802008020080L, 0x2008020080000000L)
 #define t7_CO7 T7(0x0100401004010040L, 0x1004010040000000L)
 #define t7_CO8 T7(0x0080200802008020L, 0x0802008020000000L)
-#define t7_RIT T7(0x0040100401004010L, 0x0401004010000000L)
-#define t7_100 T7(0xffffffffffffffffL, 0xfffffffff0000000L)
+#define t7_RIT T7(0x0040100401004010L, 0x0401004010000000L) // right column
+#define t7_CRI T7(0x7fdff7fdff7fdff7L, 0xfdff7fdff0000000L) // center-right
+#define t7_CBT T7(0x003fffffffffffffL, 0xfffffffff0000000L) // center-bottom
+#define t7_100 T7(0xffffffffffffffffL, 0xfffffffff0000000L) // all
 
 typedef struct {
-  char name;      // one-char name of patter
+  char name;      // one-char name of pattern
   int8_t w, x, y; // weight, x and y sizes (could be computed with recent C?)
   t7_t pat;       // pattern definition (score & points unused)
 } pattern_t;
@@ -212,6 +217,7 @@ static int t7_count(t7_t f)
   return __builtin_popcountll(f.f1) + __builtin_popcountll(f.f2);
 }
 
+// all possible alignments
 #define naligns 20
 static t7_t ALIGNS[naligns] = {
   t7_TOP, t7_RO1, t7_RO2, t7_RO3, t7_RO4,
@@ -476,7 +482,7 @@ static move_t play(FILE * out, t7_t f, char pieces[3])
     MOVE(pieces, 2, 0, 1, f), MOVE(pieces, 2, 1, 0, f)
   };
 
-  // do not run duplicates
+  // but do not run duplicates
   bool run[6] = { true, true, true, true, true, true };
   for (int i = 1; i < 6; i++)
   {
