@@ -1,5 +1,5 @@
 /*
- * $Id: 1010.c 156 2020-11-07 07:52:47Z coelho $
+ * $Id: 1010.c 157 2020-11-07 07:55:01Z coelho $
  *
  * COPYRIGHT
  *   (c) 2016 Fabien Coelho <1010 dot bang at coelho dot net>
@@ -48,7 +48,7 @@
 #undef PARALLEL_DEGREE
 #endif // PARALLEL
 
-#define VERSION_ID "$Id: 1010.c 156 2020-11-07 07:52:47Z coelho $"
+#define VERSION_ID "$Id: 1010.c 157 2020-11-07 07:55:01Z coelho $"
 
 typedef enum { false, true } bool;
 
@@ -102,7 +102,8 @@ static long int my_random(void)
 
 /************************************************************************ T7 */
 
-// bit field representation of the 10x10 board
+// bit field representation of the 10x10 board.
+// t7 stands for 2⁷ because it holds 128 bits.
 
 // gcc seems to have 128-bit integers (unsigned __int128),
 // but the doc is scarce, eg how to write constants for instance.
